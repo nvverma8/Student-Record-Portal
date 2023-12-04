@@ -1,0 +1,195 @@
+{% extends "students/base.html" %}
+
+{% block body %}
+<h3 class="m-4">All Students Data</h3>
+
+<div class="row">
+  <div class="col-12">
+    {% if students %}
+    <div class="card bg-light ms-4 me-4 mb-4">
+      <div class="card-header">
+        <i class="fa-solid fa-list fa-lg"></i> Student Records
+      </div>
+      <div class="card-body">
+        <p class="card-text">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th scope="col">Name</th>
+                  <th scope="col">Address</th>
+                  <th scope="col">City</th>
+                  <th scope="col">Country</th>
+                  <th scope="col">Pincode</th>
+                  <th scope="col">SAT Score</th>
+                  <th scope="col">STATUS</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for student in students %}
+                  <tr>
+                    <td>{{ student.name }}</td>
+                    <td>{{ student.address }}</td>
+                    <td>{{ student.city }}</td>
+                    <td>{{ student.country }}</td>
+                    <td>{{ student.pincode }}</td>
+                    <td>{{ student.sat_score}}</td>
+                    <td>{% if student.sat_score > 30 %}
+                      Pass
+                  {% else %}
+                      Fail
+                  {% endif %}</td>
+                    <td>
+                      <button type="button" class="btn btn-success me-1" href="{% url 'view_student' student.id %}" data-bs-toggle="modal" data-bs-target="#myModal{{student.id}}">
+                        <i class="fa-solid fa-circle-info fa-lg"></i>
+                      </button>
+
+                      <!-- Modal - View Student -->
+                      <div class="modal" id="myModal{{student.id}}" tabindex="-1" aria-labelledby="myModalLabel1" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h5 class="modal-title">
+                                Student Information
+                              </h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true"></span>
+                              </button>
+                            </div>
+                            <div class="modal-body">
+                              <ul class="list-unstyled">
+                                <li>Student Name: <strong>{{ student.name }}</strong></li>
+                                <li>Address: <strong>{{ student.address }}</strong></li>
+                                <li>City: <strong>{{ student.city }}</strong></li>
+                                <li>Country: <strong>{{ student.country }}</strong></li>
+                                <li>Pincode: <strong>{{ student.pincode }}</strong></li>
+                                <li>SAT Score: <strong>{{ student.sat_score }}</strong></li>
+                                <li>Status: <strong> 
+                                {% if student.sat_score > 30 %}
+                                  Pass
+                              {% else %}
+                                  Fail
+                              {% endif %}</strong></li>
+                              </ul>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <a class="btn btn-warning me-1" href="{% url 'edit' student.id %}">
+                        <i class="fa-solid fa-pen-to-square fa-lg"></i>
+                      </a>
+
+                      <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete{{student.id}}">
+                        <i class="fa-solid fa-trash-can fa-lg"></i>
+                      </button>
+
+                      <!-- Modal - Delete Student -->
+                      <div class="modal" id="delete{{student.id}}" tabindex="-1" aria-labelledby="myModalLabel2" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h5 class="modal-title">
+                                Student: {{ student.name }} 
+                              </h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true"></span>
+                              </button>
+                            </div>
+                            <div class="modal-body">
+                              <p>Are you sure you want to delete this student?</p>
+                            </div>
+                            <div class="modal-footer">
+                              <form action="{% url 'delete' student.id %}" method="POST">
+                                {% csrf_token %}
+                                <input type="submit" class="btn btn-primary" value="Delete">
+                              </form>
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                    
+                    
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <!-- "Get Rank" button -->
+            <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#getRankModal">
+              Get Rank
+            </button>
+
+            <!-- Modal - Get Rank -->
+            <div class="modal" id="getRankModal" tabindex="-1" aria-labelledby="getRankModalLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="getRankModalLabel">Get Student Rank</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <form id="getRankForm" method="post" action="{% url 'get_rank_by_name' %}">
+                      {% csrf_token %}
+                      <div class="mb-3">
+                        <label for="studentName" class="form-label">Enter Student Name:</label>
+                        <input type="text" class="form-control" id="studentName" name="name">
+                      </div>
+                      <div id="rankResult" class="mb-3" style="display: none;">
+                        <label for="rank" class="form-label">Rank:</label>
+                        <input type="text" class="form-control" id="rank" readonly>
+                      </div>
+                      <button type="submit" class="btn btn-primary">Get Rank</button>
+                    </form>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- End Modal - Get Rank -->
+          </div>
+        </p>
+      </div>
+    </div>
+    {% else %}
+      <h5 class="alert alert-primary ms-4 me-4">No Student Records</h5>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+<script>
+  function getStudentRank() {
+      var studentName = document.getElementById('studentName').value;
+
+      fetch('{% url 'get_rank_by_name' %}', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'X-CSRFToken': '{{ csrf_token }}'
+          },
+          body: 'name=' + encodeURIComponent(studentName)
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.rank !== undefined) {
+              document.getElementById('rank').value = data.rank;
+              document.getElementById('rankResult').style.display = 'block';
+          } else {
+              console.log('No rank found or error occurred.');
+          }
+      })
+      .catch(error => {
+          console.error('Error fetching rank:', error);
+      });
+  }
+</script>
+
